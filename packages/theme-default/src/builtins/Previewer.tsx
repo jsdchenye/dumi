@@ -57,7 +57,6 @@ export interface IPreviewerProps extends IPreviewerComponentProps {
 function getSourceType(file: string, source: IPreviewerComponentProps['sources']['_']) {
   // use file extension as source type first
   let type = file.match(/\.(\w+)$/)?.[1];
-
   if (!type) {
     type = source.tsx ? 'tsx' : 'jsx';
   }
@@ -87,10 +86,14 @@ const Previewer: React.FC<IPreviewerProps> = oProps => {
     props.sources[currentFile][sourceType] || props.sources[currentFile].content;
   const playgroundUrl = useTSPlaygroundUrl(locale, currentFileCode);
 
-  useEffect(() => {
-    setSourceType(getSourceType(currentFile, props.sources[currentFile]));
-  }, [currentFile]);
+  const handleClick = (filename: string) => {
+    setCurrentFile(filename);
+    setSourceType(getSourceType(filename, props.sources[filename]));
+  }
 
+  // useEffect(() => {
+  //   setSourceType(getSourceType(currentFile, props.sources[currentFile]));
+  // }, [currentFile]);
   return (
     <div
       style={props.style}
@@ -126,8 +129,8 @@ const Previewer: React.FC<IPreviewerProps> = oProps => {
             src={demoUrl}
           />
         ) : (
-          props.children
-        )}
+            props.children
+          )}
       </div>
       <div className="__dumi-default-previewer-desc" data-title={props.title}>
         {props.title && <AnchorLink to={`#${props.identifier}`}>{props.title}</AnchorLink>}
@@ -212,13 +215,15 @@ const Previewer: React.FC<IPreviewerProps> = oProps => {
         <div className="__dumi-default-previewer-source-wrapper">
           {!isSingleFile && (
             <ul className="__dumi-default-previewer-source-tab">
-              {Object.keys(props.sources).map(filename => (
-                <li className={currentFile === filename ? 'active' : ''} key={filename}>
-                  <button type="button" onClick={() => setCurrentFile(filename)}>
-                    {filename === '_' ? `index.${sourceType}` : filename}
-                  </button>
-                </li>
-              ))}
+              {Object.keys(props.sources).map(filename => {
+                return (
+                  <li className={currentFile === filename ? 'active' : ''} key={filename}>
+                    <button type="button" onClick={(e) => handleClick(filename)}>
+                      {filename === '_' ? `index.${getSourceType(filename, props.sources[filename])}` : filename}
+                    </button>
+                  </li>
+                )
+              })}
             </ul>
           )}
           <div className="__dumi-default-previewer-source">
